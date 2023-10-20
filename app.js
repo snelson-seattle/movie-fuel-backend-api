@@ -36,6 +36,10 @@ server.use('/MovieFuel', myRouter);
 server.use("/auth", authRouter);
 server.use('/user', userRouter);
 
+server.get("/", (req, res) => {
+  res.status(200).json({message: "It works"});
+});
+
 server.listen(PORT, () => {
   logger.info(`Server is listening on Port: ${PORT}`);
 });
