@@ -2,6 +2,7 @@ const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userDAO = require("../dao/userDAO");
+const {getAccessTokenSecret, getRefreshTokenSecret} = require("../utils/getParameters");
 
 router.post("/register", async (req, res) => {
   const { username, password, email } = req.body;
@@ -23,6 +24,9 @@ router.post("/register", async (req, res) => {
 
     await userDAO.addUser(newUser);
 
+    const accessTokenSecret = await getAccessTokenSecret();
+    const refreshTokenSecret = await getRefreshTokenSecret();
+
     // Create JWTs
     const accessToken = jwt.sign(
       {
@@ -31,13 +35,13 @@ router.post("/register", async (req, res) => {
           role: newUser.role,
         },
       },
-      process.env.ACCESS_TOKEN_SECRET,
+      accessTokenSecret,
       { expiresIn: "600s" }
     );
 
     const refreshToken = jwt.sign(
       { username: newUser.username },
-      process.env.REFRESH_TOKEN_SECRET,
+      refreshTokenSecret,
       { expiresIn: "1d" }
     );
 
@@ -88,6 +92,9 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
+    const accessTokenSecret = await getAccessTokenSecret();
+    const refreshTokenSecret = await getRefreshTokenSecret();
+
     // Create JWTs
     const accessToken = jwt.sign(
       {
@@ -96,13 +103,13 @@ router.post("/login", async (req, res) => {
           role: response.Item.role,
         },
       },
-      process.env.ACCESS_TOKEN_SECRET,
+      accessTokenSecret,
       { expiresIn: "600s" }
     );
 
     const refreshToken = jwt.sign(
       { username: response.Item.username },
-      process.env.REFRESH_TOKEN_SECRET,
+      refreshTokenSecret,
       { expiresIn: "1d" }
     );
 
@@ -122,7 +129,7 @@ router.post("/login", async (req, res) => {
   }
 });
 
-router.get("/refresh", (req, res) => {
+router.get("/refresh", async (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies.jwt) {
@@ -131,10 +138,13 @@ router.get("/refresh", (req, res) => {
 
   const refreshToken = cookies.jwt;
 
+  const accessTokenSecret = await getAccessTokenSecret();
+  const refreshTokenSecret = await getRefreshTokenSecret();
+
   // verify the refresh token
   jwt.verify(
     refreshToken,
-    process.env.REFRESH_TOKEN_SECRET,
+    refreshTokenSecret,
     async (err, decoded) => {
       if (err) return res.status(403).json({ message: "Forbidden" });
 
@@ -151,7 +161,7 @@ router.get("/refresh", (req, res) => {
               role: existingUser.Item.role,
             },
           },
-          process.env.ACCESS_TOKEN_SECRET,
+          accessTokenSecret,
           { expiresIn: "600s" }
         );
 
