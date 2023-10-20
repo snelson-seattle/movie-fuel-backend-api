@@ -2,7 +2,6 @@ const router = require("express").Router();
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const userDAO = require("../dao/userDAO");
-const {getAccessTokenSecret, getRefreshTokenSecret} = require("../utils/getParameters");
 
 router.post("/register", async (req, res) => {
   const { username, password, email } = req.body;
@@ -24,9 +23,6 @@ router.post("/register", async (req, res) => {
 
     await userDAO.addUser(newUser);
 
-    const accessTokenSecret = await getAccessTokenSecret();
-    const refreshTokenSecret = await getRefreshTokenSecret();
-
     // Create JWTs
     const accessToken = jwt.sign(
       {
@@ -35,13 +31,13 @@ router.post("/register", async (req, res) => {
           role: newUser.role,
         },
       },
-      accessTokenSecret,
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "600s" }
     );
 
     const refreshToken = jwt.sign(
       { username: newUser.username },
-      refreshTokenSecret,
+      process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
 
@@ -65,7 +61,6 @@ router.post("/register", async (req, res) => {
 
 router.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  console.log(username, password);
 
   if (!username || !password) {
     return res
@@ -92,9 +87,6 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ message: "Unauthorized" });
     }
 
-    const accessTokenSecret = await getAccessTokenSecret();
-    const refreshTokenSecret = await getRefreshTokenSecret();
-
     // Create JWTs
     const accessToken = jwt.sign(
       {
@@ -103,13 +95,13 @@ router.post("/login", async (req, res) => {
           role: response.Item.role,
         },
       },
-      accessTokenSecret,
+      process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "600s" }
     );
 
     const refreshToken = jwt.sign(
       { username: response.Item.username },
-      refreshTokenSecret,
+      process.env.REFRESH_TOKEN_SECRET,
       { expiresIn: "1d" }
     );
 
@@ -138,13 +130,10 @@ router.get("/refresh", async (req, res) => {
 
   const refreshToken = cookies.jwt;
 
-  const accessTokenSecret = await getAccessTokenSecret();
-  const refreshTokenSecret = await getRefreshTokenSecret();
-
   // verify the refresh token
   jwt.verify(
     refreshToken,
-    refreshTokenSecret,
+    process.env.REFRESH_TOKEN_SECRET,
     async (err, decoded) => {
       if (err) return res.status(403).json({ message: "Forbidden" });
 
@@ -161,7 +150,7 @@ router.get("/refresh", async (req, res) => {
               role: existingUser.Item.role,
             },
           },
-          accessTokenSecret,
+          process.env.ACCESS_TOKEN_SECRET,
           { expiresIn: "600s" }
         );
 

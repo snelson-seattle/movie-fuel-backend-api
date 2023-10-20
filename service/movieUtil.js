@@ -1,8 +1,6 @@
 require("dotenv").config({ path: require("find-config")(".env") });
-const { getTMDBKey } = require("../utils/getParameters");
 
-async function searchDataBaseByQuery(query, language, page) {
-  const tmdb_key = await getTMDBKey();
+function searchDataBaseByQuery(query, language, page) {
   if (language === void 0) {
     language = "en-US";
   }
@@ -18,7 +16,7 @@ async function searchDataBaseByQuery(query, language, page) {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: tmdb_key,
+      Authorization: process.env.TMDB_KEY,
     },
   };
   var data = new Promise(function (resolve, reject) {
@@ -36,15 +34,14 @@ async function searchDataBaseByQuery(query, language, page) {
   return data;
 }
 
-async function searchDataBaseByID(id) {
-  const tmdb_key = await getTMDBKey();
+function searchDataBaseByID(id) {
   var fetch = require("node-fetch");
   var url = "https://api.themoviedb.org/3/movie/".concat(id);
   var options = {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: tmdb_key,
+      Authorization: process.env.TMDB_KEY,
     },
   };
   var data = new Promise(function (resolve, reject) {
@@ -62,13 +59,13 @@ async function searchDataBaseByID(id) {
   return data;
 }
 // filtered search
-async function filteredSearchSimple(
+function filteredSearchSimple(
   genresInclude,
   genresExclude,
   sortBy,
   page
 ) {
-  const tmdb_key = await getTMDBKey();
+  
   var fetch = require("node-fetch");
   var url = `https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=${page}&with_genres=${genresInclude}&without_genres=${genresExclude}&sort_by=${sortBy}`;
   console.log(url);
@@ -76,7 +73,7 @@ async function filteredSearchSimple(
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: tmdb_key,
+      Authorization: process.env.TMDB_KEY,
     },
   };
   var data = new Promise(function (resolve, reject) {
@@ -94,8 +91,8 @@ async function filteredSearchSimple(
   return data;
 }
 // get images "https://image.tmdb.org/t/p/original
-async function getImagesByID(id) {
-  const tmdb_key = await getTMDBKey();
+function getImagesByID(id) {
+  
   var fetch = require("node-fetch");
   var url = "https://api.themoviedb.org/3/movie/".concat(
     id,
@@ -105,7 +102,7 @@ async function getImagesByID(id) {
     method: "GET",
     headers: {
       accept: "application/json",
-      Authorization: tmdb_key,
+      Authorization: process.env.TMDB_KEY,
     },
   };
   var data = new Promise(function (resolve, reject) {
