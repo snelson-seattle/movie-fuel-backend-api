@@ -1,2 +1,4 @@
 #!/bin/bash
-pgrep -d -l -f "node app.js" | sudo xargs kill
+if pgrep -d -l -f "node app.js"; 
+then pgrep -d -l -f "node app.js" | sudo xargs kill;
+fi
