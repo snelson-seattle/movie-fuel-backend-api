@@ -29,7 +29,7 @@ router.post('/', verifyJWT, async (req, res) => {
       username,
       comment,
       dateTime,
-      body?.ReplyToID
+      body.ReplyToID
     );
     const newComment = {
       ReplyID: replyID,
@@ -37,7 +37,7 @@ router.post('/', verifyJWT, async (req, res) => {
       Author: username,
       Comment: comment,
       DateTime: dateTime,
-      ReplyToID: body?.ReplyToID,
+      ReplyToID: body.ReplyToID,
       Likes: 0,
     };
     logger.info(`Successful Comment POST:\n ${JSON.stringify(newComment)}`);
