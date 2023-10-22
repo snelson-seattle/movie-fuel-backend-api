@@ -1,15 +1,16 @@
-const router = require("express").Router();
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const userDAO = require("../dao/userDAO");
+const router = require('express').Router();
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+const userDAO = require('../dao/userDAO');
+//require('dotenv').config({ path: require('find-config')('.env') });
 
-router.post("/register", async (req, res) => {
+router.post('/register', async (req, res) => {
   const { username, password, email } = req.body;
 
   if (!username || !password || !email) {
     return res
       .status(400)
-      .json({ message: "Email, Username and Password are required fields" });
+      .json({ message: 'Email, Username and Password are required fields' });
   }
 
   try {
@@ -18,7 +19,7 @@ router.post("/register", async (req, res) => {
       username,
       password: hashedPassword,
       email,
-      role: "user",
+      role: 'user',
     };
 
     await userDAO.addUser(newUser);
@@ -32,40 +33,40 @@ router.post("/register", async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "600s" }
+      { expiresIn: '600s' }
     );
 
     const refreshToken = jwt.sign(
       { username: newUser.username },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
     // Create a secure cookie with refresh token
-    res.cookie("jwt", refreshToken, {
+    res.cookie('jwt', refreshToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "none",
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // expires in 1 week
     });
 
     // Return the access token
     res.status(201).json({ accessToken });
   } catch (error) {
-    if (error.code === "ConditionalCheckFailedException") {
-      return res.status(409).json({ message: "Username already exists" });
+    if (error.code === 'ConditionalCheckFailedException') {
+      return res.status(409).json({ message: 'Username already exists' });
     }
-    return res.status(500).json({ message: "Something went wrong." });
+    return res.status(500).json({ message: 'Something went wrong.' });
   }
 });
 
-router.post("/login", async (req, res) => {
+router.post('/login', async (req, res) => {
   const { username, password } = req.body;
 
   if (!username || !password) {
     return res
       .status(400)
-      .json({ message: "Both username and password are required fields" });
+      .json({ message: 'Both username and password are required fields' });
   }
 
   try {
@@ -74,7 +75,7 @@ router.post("/login", async (req, res) => {
 
     // Return if an existing user is not found
     if (!response) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Check for matching password if existing user is found
@@ -84,7 +85,7 @@ router.post("/login", async (req, res) => {
     );
     // Return if the password doesn't match
     if (!matchingPassword) {
-      return res.status(401).json({ message: "Unauthorized" });
+      return res.status(401).json({ message: 'Unauthorized' });
     }
 
     // Create JWTs
@@ -96,20 +97,20 @@ router.post("/login", async (req, res) => {
         },
       },
       process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: "600s" }
+      { expiresIn: '600s' }
     );
 
     const refreshToken = jwt.sign(
       { username: response.Item.username },
       process.env.REFRESH_TOKEN_SECRET,
-      { expiresIn: "1d" }
+      { expiresIn: '1d' }
     );
 
     // Create a secure cookie with refresh token
-    res.cookie("jwt", refreshToken, {
+    res.cookie('jwt', refreshToken, {
       httpOnly: true,
       secure: false,
-      sameSite: "none",
+      sameSite: 'none',
       maxAge: 7 * 24 * 60 * 60 * 1000, // expires in 1 week
     });
 
@@ -117,15 +118,15 @@ router.post("/login", async (req, res) => {
     res.json({ accessToken });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ message: "Something went wrong." });
+    res.status(500).json({ message: 'Something went wrong.' });
   }
 });
 
-router.get("/refresh", async (req, res) => {
+router.get('/refresh', (req, res) => {
   const cookies = req.cookies;
 
   if (!cookies.jwt) {
-    return res.status(401).json({ message: "Unauthorized" });
+    return res.status(401).json({ message: 'Unauthorized' });
   }
 
   const refreshToken = cookies.jwt;
@@ -135,13 +136,13 @@ router.get("/refresh", async (req, res) => {
     refreshToken,
     process.env.REFRESH_TOKEN_SECRET,
     async (err, decoded) => {
-      if (err) return res.status(403).json({ message: "Forbidden" });
+      if (err) return res.status(403).json({ message: 'Forbidden' });
 
       try {
         const existingUser = await userDAO.getUser(decoded.username);
 
         if (!existingUser)
-          return res.status(401).json({ message: "Unauthorized" });
+          return res.status(401).json({ message: 'Unauthorized' });
 
         const accessToken = jwt.sign(
           {
@@ -151,29 +152,24 @@ router.get("/refresh", async (req, res) => {
             },
           },
           process.env.ACCESS_TOKEN_SECRET,
-          { expiresIn: "600s" }
+          { expiresIn: '600s' }
         );
 
         res.json({ accessToken });
       } catch (error) {
         console.error(error);
-        return res.status(500).json({ message: "Something went wrong" });
+        return res.status(500).json({ message: 'Something went wrong' });
       }
     }
   );
 });
 
-router.post("/logout", (req, res) => {
+router.post('/logout', (req, res) => {
   const cookies = req.cookies;
 
-  if (cookies) {
-    res.clearCookie("jwt", { httpOnly: true, sameSite: "none", secure: false });
-    return res.json({ message: "Cookie cleared" });
-  }else{
-    return res.sendStatus(204); // No content
-  }
-
-  
+  if (!cookies?.jwt) return res.sendStatus(204); // No content
+  res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
+  res.json({ message: 'Cookie cleared' });
 });
 
 module.exports = router;

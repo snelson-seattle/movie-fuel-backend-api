@@ -12,9 +12,6 @@ function validateReview(req) {
   const invalidMessages = [];
 
   // Input validation
-  if (!body.Author || body.Author === '') {
-    invalidMessages.push('No attribute Author, or empty Attribute Value');
-  }
   if (!body.Title || body.Title === '') {
     invalidMessages.push('No Title attribute, or empty Title value');
   }

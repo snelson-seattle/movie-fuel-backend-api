@@ -10,10 +10,24 @@ async function getProfile(username) {
     return userData.Item;
 
 }
-async function updateFavorites(username, id) {
+async function updateFavorites(username, favorites) {
     // calls the dao to check login
     try {
-        const userData = await userDao.addToFavorites(username, id);
+        const userData = await userDao.addToFavorites(username, favorites);
+        return 1;
+    } catch (err) {
+        console.error(err);
+    }
+
+
+
+
+
+}
+async function updateAbout(username, about) {
+    // calls the dao to check login
+    try {
+        const userData = await userDao.updateAbout(username, about);
         return 1;
     } catch (err) {
         console.error(err);
@@ -26,5 +40,6 @@ async function updateFavorites(username, id) {
 }
 module.exports = {
     getProfile,
-    updateFavorites
+    updateFavorites,
+    updateAbout
 }

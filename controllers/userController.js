@@ -23,13 +23,13 @@ router.get('/profile/:username', async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 });
-router.patch('/profile/Favorites/:username/:id', async (req, res) => {
+router.patch('/profile/Favorites/:username/', async (req, res) => {
     const username = req.params.username;
-    const movieId = req.params.id;
+    const movieIds = req.body.favorites;
 
 
     try {
-        const userInfo = await userService.updateFavorites(username, movieId);
+        const userInfo = await userService.updateFavorites(username, movieIds);
 
         if (userInfo) {
             res.status(200);
@@ -41,6 +41,31 @@ router.patch('/profile/Favorites/:username/:id', async (req, res) => {
             res.status(404);
             res.send({
                 message: "didn't add movie successfully"
+            });
+        }
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ message: 'Internal server error' });
+    }
+});
+router.put('/profile/About/:username/', async (req, res) => {
+    const username = req.params.username;
+    const about = req.body.about;
+
+
+    try {
+        const userInfo = await userService.updateAbout(username, about);
+
+        if (userInfo) {
+            res.status(200);
+            res.send({
+                message: "update about me successfully",
+                info: userInfo
+            });
+        } else {
+            res.status(404);
+            res.send({
+                message: "didn't update about me"
             });
         }
     } catch (err) {
