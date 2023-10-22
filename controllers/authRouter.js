@@ -167,7 +167,7 @@ router.get('/refresh', (req, res) => {
 router.post('/logout', (req, res) => {
   const cookies = req.cookies;
 
-  if (!cookies?.jwt) return res.sendStatus(204); // No content
+  if (!cookies || !cookies.jwt) return res.sendStatus(204); // No content
   res.clearCookie('jwt', { httpOnly: true, sameSite: 'none', secure: false });
   res.json({ message: 'Cookie cleared' });
 });
