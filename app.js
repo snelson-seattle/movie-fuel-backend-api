@@ -19,15 +19,11 @@ const commentsRouter = require('./controllers/commentsRouter');
 const PORT = process.env.PORT || 4000;
 
 const server = express();
-// CORS
-const corsoptions = {
-  origin: '*',
-  optionsSuccessStatus: 200,
-};
-server.use(cors(corsoptions));
 
-// CORS middleware
-server.use(cors({ allowedOrigins: '*' }));
+// CORS
+server.use(cors({allowedOrigins: "http://movie-fuel-website-production.s3-website-us-west-2.amazonaws.com"}));
+
+
 
 // cookie parsing middleware
 server.use(cookieParser());
